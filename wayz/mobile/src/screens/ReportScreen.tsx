@@ -27,14 +27,16 @@ export function ReportScreen({ position, userId, onDone, onCancel }: Props) {
   const [type, setType] = useState<IncidentType | null>(null);
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [sending, setSending] = useState(false);
 
   if (showCamera) {
     return (
       <CameraCapture
-        onCapture={(uri) => {
+        onCapture={(uri, base64) => {
           setPhotoUri(uri);
+          setPhotoBase64(base64);
           setShowCamera(false);
         }}
         onCancel={() => setShowCamera(false)}
@@ -46,7 +48,7 @@ export function ReportScreen({ position, userId, onDone, onCancel }: Props) {
     if (!type) return Alert.alert('Type requis', "Choisissez un type d'incident.");
     setSending(true);
     try {
-      await createIncident({ type, position, description: description.trim(), photoUri, userId });
+      await createIncident({ type, position, description: description.trim(), photoBase64, userId });
       onDone();
     } catch (e) {
       Alert.alert('Échec', e instanceof Error ? e.message : 'Erreur réseau');

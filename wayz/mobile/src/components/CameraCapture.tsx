@@ -3,7 +3,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
 interface Props {
-  onCapture: (uri: string) => void;
+  onCapture: (uri: string, base64: string) => void;
   onCancel: () => void;
 }
 
@@ -32,8 +32,8 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
     if (busy) return;
     setBusy(true);
     try {
-      const photo = await ref.current?.takePictureAsync({ quality: 0.6 });
-      if (photo?.uri) onCapture(photo.uri);
+      const photo = await ref.current?.takePictureAsync({ quality: 0.5, base64: true });
+      if (photo?.uri && photo.base64) onCapture(photo.uri, photo.base64);
     } catch {
       Alert.alert('Erreur', "Impossible de prendre la photo.");
     } finally {

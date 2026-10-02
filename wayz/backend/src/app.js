@@ -26,7 +26,7 @@ const upload = multer({
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 const num = (v) => (v === undefined || v === '' ? NaN : Number(v));
@@ -35,6 +35,16 @@ const validCoords = (lat, lng) =>
 
 const getActive = (id) =>
   db.prepare('SELECT * FROM incidents WHERE id = ? AND expires_at > ?').get(id, Date.now());
+
+// Accepte la photo en base64 (JPEG) pour les clients qui ne savent pas envoyer de multipart.
+function saveBase64Photo(b64) {
+  if (typeof b64 !== 'string' || b64.length === 0) return null;
+  const buffer = Buffer.from(b64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+  if (buffer.length === 0 || buffer.length > 8 * 1024 * 1024) return null;
+  const name = `${crypto.randomUUID()}.jpg`;
+  require('fs').writeFileSync(path.join(UPLOAD_DIR, name), buffer);
+  return `/uploads/${name}`;
+}
 
 function withinRange(req, incident) {
   const lat = num(req.body?.user_latitude);
@@ -83,7 +93,7 @@ app.post('/incidents', upload.single('photo'), async (req, res) => {
     latitude,
     longitude,
     description: description ? String(description).slice(0, 500) : null,
-    photo_url: req.file ? `/uploads/${req.file.filename}` : null,
+    photo_url: req.file ? `/uploads/${req.file.filename}` : saveBase64Photo(req.body.photo_base64),
     created_at: now,
     reported_by: reported_by || 'anonymous',
     expires_at: initialExpiry(now),

@@ -1,8 +1,9 @@
 import { API_URL } from '../config';
 import { Coords, Incident, IncidentType } from '../types';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, init);
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = { 'bypass-tunnel-reminder': '1', ...(init.headers as Record<string, string>) };
+  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error ?? `Erreur ${res.status}`);
@@ -26,21 +27,22 @@ export function createIncident(params: {
   type: IncidentType;
   position: Coords;
   description?: string;
-  photoUri?: string | null;
+  photoBase64?: string | null;
   userId: string;
 }) {
-  const form = new FormData();
-  form.append('type', params.type);
-  form.append('latitude', String(params.position.latitude));
-  form.append('longitude', String(params.position.longitude));
-  form.append('user_latitude', String(params.position.latitude));
-  form.append('user_longitude', String(params.position.longitude));
-  form.append('reported_by', params.userId);
-  if (params.description) form.append('description', params.description);
-  if (params.photoUri) {
-    form.append('photo', { uri: params.photoUri, name: 'photo.jpg', type: 'image/jpeg' } as any);
-  }
-  return request<Incident>('/incidents', { method: 'POST', body: form });
+  return request<Incident>('/incidents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: params.type,
+      latitude: params.position.latitude,
+      longitude: params.position.longitude,
+      ...userPos(params.position),
+      reported_by: params.userId,
+      description: params.description || undefined,
+      photo_base64: params.photoBase64 || undefined,
+    }),
+  });
 }
 
 export const confirmIncident = (id: string, position: Coords) =>
