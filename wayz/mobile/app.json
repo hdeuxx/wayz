@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Wayz",
+    "slug": "wayz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.wayz.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Wayz utilise votre position pour signaler et afficher les incidents proches.",
+        "NSCameraUsageDescription": "Wayz utilise la caméra pour joindre une photo à un signalement."
+      }
+    },
+    "android": {
+      "package": "com.wayz.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "CAMERA"],
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-location", "expo-camera", "expo-notifications"],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
